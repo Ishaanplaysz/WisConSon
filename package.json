@@ -1,0 +1,60 @@
+{
+  "name": "wisconson",
+  "version": "1.0.0",
+  "description": "A simple Electron app for Mom with Start, Stop, Screen, and Update buttons.",
+  "main": "src/main.js",
+  "author": "",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "pack:win": "electron-builder --win --x64",
+    "pack:mac": "electron-builder --mac --x64",
+    "pack": "electron-builder -mwl"
+  },
+  "devDependencies": {
+    "electron": "^31.3.0",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {},
+  "build": {
+    "appId": "com.wisconson.app",
+    "productName": "WisConSon",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "WisConSon",
+      "uninstallDisplayName": "WisConSon",
+      "allowToChangeInstallationDirectory": true,
+      "oneClick": false,
+      "allowElevation": true,
+      "deleteAppDataOnUninstall": true
+    }
+  }
+}

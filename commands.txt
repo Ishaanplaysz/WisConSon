@@ -1,0 +1,15 @@
+# Commands to run on your other computer (with Node.js installed)
+
+# 1) Install dependencies
+npm install
+
+# 2) Start the app in dev mode
+npm run start
+
+# 3) Package for Windows (creates an installer in dist/)
+npm run pack:win
+
+# 4) Package for macOS (creates a DMG in dist/)
+npm run pack:mac
+
+# Note: mac packaging must run on macOS; Windows packaging must run on Windows.

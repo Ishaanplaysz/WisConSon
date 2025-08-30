@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WisConSon - Keep Your Screen Awake</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #111827;
+            --text: #e5e7eb;
+            --accent: #22c55e;
+            --accent-2: #3b82f6;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            background: radial-gradient(1200px 600px at 10% 10%, #1f2937, #0f172a);
+            color: var(--text);
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            display: grid;
+            place-items: center;
+        }
+        .wrap {
+            width: 380px;
+            position: relative;
+        }
+        .love {
+            position: fixed;
+            top: 8px;
+            right: 12px;
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.3px;
+            opacity: 0.85;
+        }
+        .card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        h1 {
+            margin: 0 0 6px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+        p.sub {
+            margin: 0 0 14px;
+            opacity: 0.75;
+            font-size: 12px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        button {
+            appearance: none;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.04);
+            color: var(--text);
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            transition: transform 120ms ease, background 160ms ease, border-color 160ms ease;
+        }
+        button:hover { transform: translateY(-1px); background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2); }
+        button:active { transform: translateY(0); }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .start { border-color: rgba(34,197,94,0.35); background: rgba(34,197,94,0.1); }
+        .stop { border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.08); }
+        .screen { border-color: rgba(59,130,246,0.35); background: rgba(59,130,246,0.08); }
+        .update { border-color: rgba(234,179,8,0.35); background: rgba(234,179,8,0.08); }
+
+        .out {
+            margin-top: 12px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 12px;
+            opacity: 0.9;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 10px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-height: 64px;
+        }
+
+        .notice {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.2);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="love">i love u mom</div>
+        <div class="card">
+            <h1>WisConSon</h1>
+            <p class="sub">Simple helper controls</p>
+            <div class="grid">
+                <button id="start" class="start">Start</button>
+                <button id="stop" class="stop">Stop</button>
+                <button id="screen" class="screen">Screen</button>
+                <button id="update" class="update">Update</button>
+            </div>
+            <div id="out" class="out"></div>
+        </div>
+    </div>
+    <div class="notice">
+        🌐 Running in web mode - Keep this tab open to prevent screen sleep
+    </div>
+
+    <script>
+        (() => {
+            const out = document.getElementById('out');
+            const startBtn = document.getElementById('start');
+            const stopBtn = document.getElementById('stop');
+            const screenBtn = document.getElementById('screen');
+            const updateBtn = document.getElementById('update');
+            
+            let wakeLock = null;
+            let isActive = false;
+
+            const log = (msg) => {
+                out.textContent = new Date().toLocaleTimeString() + ' — ' + msg;
+            };
+
+            // Start button - Request wake lock
+            startBtn.addEventListener('click', async () => {
+                if ('wakeLock' in navigator) {
+                    try {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                        isActive = true;
+                        log('Keep screen ON started.');
+                        startBtn.disabled = true;
+                        stopBtn.disabled = false;
+                    } catch (err) {
+                        log('Failed to start keep-awake: ' + err.message);
+                    }
+                } else {
+                    log('Wake Lock API not supported in this browser');
+                }
+            });
+
+            // Stop button - Release wake lock
+            stopBtn.addEventListener('click', async () => {
+                if (wakeLock) {
+                    try {
+                        await wakeLock.release();
+                        wakeLock = null;
+                        isActive = false;
+                        log('Keep-awake stopped. Tab is still running.');
+                        startBtn.disabled = false;
+                        stopBtn.disabled = true;
+                    } catch (err) {
+                        log('Error releasing wake lock: ' + err.message);
+                    }
+                }
+            });
+
+            // Screen button - Show screen info
+            screenBtn.addEventListener('click', () => {
+                const status = isActive ? 'started' : 'stopped';
+                log(`Screen: ${window.innerWidth}x${window.innerHeight} @${window.devicePixelRatio}x — keep-awake is ${status}`);
+            });
+
+            // Update button
+            updateBtn.addEventListener('click', () => {
+                log('Always up to date! (Web version)');
+            });
+
+            // Initial state
+            stopBtn.disabled = true;
+
+            // Handle visibility change
+            document.addEventListener('visibilitychange', async () => {
+                if (wakeLock !== null && document.visibilityState === 'visible') {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
